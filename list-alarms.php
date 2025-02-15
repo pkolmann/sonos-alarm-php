@@ -9,7 +9,6 @@ use Monolog\Logger;
 
 # First create a device collection that auto discovers devices from the network
 $collection = new Discovery();
-$collection->setNetworkInterface("eno1");
 
 # Create a logger to stdout so we can see in the terminal what's going on
 $logger = new Logger("sonos");
