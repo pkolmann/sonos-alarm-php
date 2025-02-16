@@ -21,7 +21,7 @@
             console.log("Toggle alarm: " + alarmId);
 
             // activate the loader
-            document.getElementById("loader").style.display = "block";
+            document.getElementById("loader")['style'].display = "block";
 
             fetch("api.php?alarmId=" + alarmId)
                 .then(response => {
@@ -35,25 +35,28 @@
 
                     // Update the UI
                     const alarmEnabled = document.getElementById("alarm-" + alarmId + "-enabled");
+                    const alarmIcon = document.getElementById("alarm-" + alarmId + "-icon");
                     if (data === "active") {
                         console.log("updating to active");
                         alarmEnabled.innerHTML = "<b>Enabled:</b> Active now (timestamp: " + new Date().toLocaleTimeString() + ")";
+                        alarmIcon.innerHTML = "⏰";
 
                         // reset the loader
-                        document.getElementById("loader").style.display = "none";
+                        document.getElementById("loader")['style'].display = "none";
                     } else {
                         console.log("updating to dormant");
                         alarmEnabled.innerHTML = "<b>Enabled:</b> Dormant now (timestamp: " + new Date().toLocaleTimeString() + ")";
+                        alarmIcon.innerHTML = "😴";
 
                         // reset the loader
-                        document.getElementById("loader").style.display = "none";
+                        document.getElementById("loader")['style'].display = "none";
                     }
                 })
                 .catch(error => {
                     console.error("There has been a problem with your fetch operation:", error);
 
                     // reset the loader
-                    document.getElementById("loader").style.display = "none";
+                    document.getElementById("loader")['style'].display = "none";
                 });
             return false;
         }
@@ -100,13 +103,15 @@ foreach ($alarms as $alarm) {
         echo "<div class = 'row mt-4'>" . PHP_EOL;
     }
     $count++;
+
+    $alarmId = $alarm->getId();
     echo "<div class='col-sm-4'>" . PHP_EOL;
-    echo "<div class='card'>" . PHP_EOL;
+    echo "<div class='card position-relative'>" . PHP_EOL;
+    echo "<div id='alarm-$alarmId-icon' class='card-icon'>" . ($alarm->isActive() ? "⏰" : "😴") . "</div>" . PHP_EOL;
     echo "<div class='card-body'>" . PHP_EOL;
     echo "<h5 class='card-title'>Alarm</h5>" . PHP_EOL;
     echo "<p class='card-text'><ul>" . PHP_EOL;
     echo "<li><b>Count:</b> $count</li>" . PHP_EOL;
-    $alarmId = $alarm->getId();
     echo "<li><b>Id:</b> $alarmId</li>" . PHP_EOL;
     echo "<li><b>Time:</b> {$alarm->getTime()}</li>" . PHP_EOL;
     echo "<li><b>FrequencyDescription:</b> {$alarm->getFrequencyDescription()}</li>" . PHP_EOL;
