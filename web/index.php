@@ -107,10 +107,13 @@ foreach ($alarms as $alarm) {
     $alarmId = $alarm->getId();
     echo "<div class='col-sm-4'>" . PHP_EOL;
     echo "<div class='card position-relative'>" . PHP_EOL;
-    echo "<div id='alarm-$alarmId-icon' class='card-icon'>" . ($alarm->isActive() ? "⏰" : "😴") . "</div>" . PHP_EOL;
+    echo "<div id='alarm-$alarmId-icon' class='card-icon' onclick='toggleAlarm($alarmId)'>" . ($alarm->isActive() ? "⏰" : "😴") . "</div>" . PHP_EOL;
     echo "<div class='card-body'>" . PHP_EOL;
     echo "<h5 class='card-title'>Alarm</h5>" . PHP_EOL;
-    echo "<p class='card-text'><ul>" . PHP_EOL;
+
+    echo "<p>{$alarm->getTime()}@{$alarm->getFrequencyDescription()}</p>" . PHP_EOL;
+
+    echo "<ul>" . PHP_EOL;
     echo "<li><b>Count:</b> $count</li>" . PHP_EOL;
     echo "<li><b>Id:</b> $alarmId</li>" . PHP_EOL;
     echo "<li><b>Time:</b> {$alarm->getTime()}</li>" . PHP_EOL;
