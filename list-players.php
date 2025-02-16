@@ -22,18 +22,21 @@ $sonos->setLogger($logger);
 # Get all devices
 $speakers = $sonos->getSpeakers();
 foreach ($speakers as $speaker) {
-    echo "Room:        " . $speaker->getRoom() . PHP_EOL;
-    echo "Group:       " . $speaker->getGroup() . PHP_EOL;
-    echo "Ip:          " . $speaker->getIp() . PHP_EOL;
-    echo "Volume:      " . $speaker->getVolume() . PHP_EOL;
-    echo "Bass:        " . $speaker->getBass() . PHP_EOL;
-    echo "Treble:      " . $speaker->getTreble() . PHP_EOL;
-    echo "Loudness:    " . $speaker->getLoudness() . PHP_EOL;
-    echo "Indicator:   " . $speaker->getIndicator() . PHP_EOL;
-    echo "Name:        " . $speaker->getName() . PHP_EOL;
-    echo "Uuid:        " . $speaker->getUuid() . PHP_EOL;
-    echo "Coordinator: " . ($speaker->isCoordinator() ? "Is Coordinator" : "Is not Coordinator") . PHP_EOL;
-
+    try {
+        echo "Room:        " . $speaker->getRoom() . PHP_EOL;
+        echo "Group:       " . $speaker->getGroup() . PHP_EOL;
+        echo "Ip:          " . $speaker->getIp() . PHP_EOL;
+        echo "Volume:      " . $speaker->getVolume() . PHP_EOL;
+        echo "Bass:        " . $speaker->getBass() . PHP_EOL;
+        echo "Treble:      " . $speaker->getTreble() . PHP_EOL;
+        echo "Loudness:    " . $speaker->getLoudness() . PHP_EOL;
+        echo "Indicator:   " . $speaker->getIndicator() . PHP_EOL;
+        echo "Name:        " . $speaker->getName() . PHP_EOL;
+        echo "Uuid:        " . $speaker->getUuid() . PHP_EOL;
+        echo "Coordinator: " . ($speaker->isCoordinator() ? "Is Coordinator" : "Is not Coordinator") . PHP_EOL;
+    } catch (Exception $e) {
+        echo "Error: " . $e->getMessage() . PHP_EOL;
+    }
 
     echo PHP_EOL;
     echo PHP_EOL;

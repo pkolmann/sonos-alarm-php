@@ -1,0 +1,32 @@
+.content-section {
+    display: none;
+}
+
+.active-section {
+    display: block;
+}
+
+/* CSS Waiting spinner */
+.loader {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-top: -50px;
+    margin-left: -50px;
+    width: 100px;
+    height: 100px;
+    z-index: 1000;
+    background-color: #333;
+    border-radius: 5px;
+    opacity: 0.8;
+    text-align: center;
+
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    animation: spin 2s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
