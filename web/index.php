@@ -23,7 +23,7 @@
             // activate the loader
             document.getElementById("loader")['style'].display = "block";
 
-            fetch("api.php?alarmId=" + alarmId)
+            fetch("api.php?cmd=toggleAlarm&alarmId=" + alarmId)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error("Network response was not ok");
@@ -58,7 +58,45 @@
                     // reset the loader
                     document.getElementById("loader")['style'].display = "none";
                 });
-            return false;
+            return true;
+        }
+
+        function editAlarm(alarmId) {
+            console.log("Edit alarm: " + alarmId);
+            return true;
+        }
+
+        function addAlarm() {
+            const room = document.getElementById("room").valueOf().value;
+            const time = document.getElementById("time").valueOf().value;
+            const frequency = document.getElementById("frequency").valueOf().value;
+
+            console.log("Add alarm: " + room + " " + time + " " + frequency);
+
+            // activate the loader
+            document.getElementById("loader")['style'].display = "block";
+
+            fetch("api.php?cmd=addAlarm&room=" + room + "&time=" + time + "&frequency=" + frequency)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    console.log(data);
+
+                    // reset the loader
+                    document.getElementById("loader")['style'].display = "none";
+                })
+                .catch(error => {
+                    console.error("There has been a problem with your fetch operation:", error);
+
+                    // reset the loader
+                    document.getElementById("loader")['style'].display = "none";
+                });
+
+            return true;
         }
     </script>
 </head>
@@ -75,10 +113,7 @@
           <a class="nav-link active" href="#" onclick="showSection('page1')">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#" onclick="showSection('page2')">Link</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#" onclick="showSection('page3')">Page3</a>
+          <a class="nav-link" href="#" onclick="showSection('page2')">Add Alarm</a>
         </li>
       </ul>
     </div>
@@ -88,6 +123,9 @@
 <div class="container mt-4">
     <div id="page1" class="content-section active-section">
 <?php
+
+use duncan3dc\Sonos\Exceptions\UnknownGroupException;
+
 $appdir = dirname(__DIR__);
 require_once "$appdir/vendor/autoload.php";
 require_once "$appdir/lib/SonosAlarm.php";
@@ -98,6 +136,10 @@ $alarms = $sonosAlarm->getAlarms();
 $count = 0;
 echo "<div class = 'row'>";
 foreach ($alarms as $alarm) {
+    print "<pre>";
+    print_r($alarm);
+    print "</pre>";
+
     if ($count % 3 == 0) {
         echo "</div>" . PHP_EOL;
         echo "<div class = 'row mt-4'>" . PHP_EOL;
@@ -136,6 +178,7 @@ foreach ($alarms as $alarm) {
     echo "</ul>" . PHP_EOL;
 
     echo "<button type='button' class='btn btn-primary' onclick='toggleAlarm($alarmId)'>Toggle</button>" . PHP_EOL;
+    echo "<button type='button' class='btn btn-primary' onclick='editAlarm($alarmId)'>Edit</button>" . PHP_EOL;
 
     echo "</div>" . PHP_EOL; // card-body
     echo "</div>" . PHP_EOL; // card
@@ -147,12 +190,51 @@ echo "</div>" . PHP_EOL; // row
 ?>
     </div>
     <div id="page2" class="content-section">
-        <h2>About Page</h2>
-        <p>Learn more about us on this page.</p>
-    </div>
-    <div id="page3" class="content-section">
-        <h2>Contact Page</h2>
-        <p>Get in touch with us.</p>
+        <h2>Add Alarm</h2>
+        <div class="form-group">
+            <p>
+                <label for="room">Room:</label>
+                <select id="room" name="room" required>
+                    <?php
+                    try {
+                        $speakers = $sonosAlarm->getSpeakers();
+                    } catch (UnknownGroupException $e) {
+                        $speakers = [];
+                    }
+                    print "<option value=''>Select a room</option>";
+                        foreach ($speakers as $speaker) {
+                            $room = $speaker['room'];
+                            $roomId = $speaker['uuid'];
+                            echo "<option value='$roomId'>$room</option>" . PHP_EOL;
+                        }
+                    ?>
+                </select>
+            </p>
+            <p>
+                <label for="time">Time:</label>
+                <input id="time" type="time" name="time" required>
+            </p>
+            <p>
+                <label for="frequency">Frequency:</label>
+                <select id="frequency" name="frequency" required>
+                    <option value="">Select a frequency</option>
+                    <option value=127>Daily</option>
+                    <option value=31>Weekdays</option>
+                    <option value=96>Weekends</option>
+                    <optgroup label="Weekdays">
+                        <option value=1>Monday</option>
+                        <option value=2>Tuesday</option>
+                        <option value=4>Wednesday</option>
+                        <option value=8>Thursday</option>
+                        <option value=16>Friday</option>
+                        <option value=32>Saturday</option>
+                        <option value=64>Sunday</option>
+                    </optgroup>
+                </select>
+            </p>
+
+            <button class="btn btn-primary" onclick="addAlarm()">Add Alarm</button>
+        </div>
     </div>
 </div>
 </div>

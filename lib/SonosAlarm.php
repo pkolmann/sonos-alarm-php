@@ -1,6 +1,8 @@
 <?php
 
+use duncan3dc\Sonos\Alarm;
 use duncan3dc\Sonos\Devices\Discovery;
+use duncan3dc\Sonos\Exceptions\UnknownGroupException;
 use duncan3dc\Sonos\Network;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -9,23 +11,23 @@ $appdir = dirname(__DIR__);
 require_once "$appdir/vendor/autoload.php";
 
 class SonosAlarm {
-    private Network $sonos;
+    private Network $network;
     private Logger $logger;
 
     public function __construct($DEBUG = false) {
         $collection = new Discovery();
-        $this->sonos = new Network($collection);
+        $this->network = new Network($collection);
         if ($DEBUG) {
             $this->logger = new Logger("sonos");
             $handler = new StreamHandler("php://stdout", Logger::DEBUG);
             $this->logger->pushHandler($handler);
-            $this->sonos->setLogger($this->logger);
+            $this->network->setLogger($this->logger);
         }
     }
 
     public function getAlarms(): array
     {
-        return $this->sonos->getAlarms();
+        return $this->network->getAlarms();
     }
 
     /**
@@ -67,5 +69,66 @@ class SonosAlarm {
                 return;
             }
         }
+    }
+
+    /**
+     * @throws UnknownGroupException
+     */
+    public function getSpeakers(): array
+    {
+        $speakers = $this->network->getSpeakers();
+        $result = [];
+        foreach ($speakers as $speaker) {
+            $result[] = [
+                "room" => $speaker->getRoom(),
+                "group" => $speaker->getGroup(),
+                "ip" => $speaker->getIp(),
+                "volume" => $speaker->getVolume(),
+                "bass" => $speaker->getBass(),
+                "treble" => $speaker->getTreble(),
+                "loudness" => $speaker->getLoudness(),
+                "indicator" => $speaker->getIndicator(),
+                "name" => $speaker->getName(),
+                "uuid" => $speaker->getUuid(),
+                "coordinator" => $speaker->isCoordinator()
+            ];
+        }
+        return $result;
+    }
+
+    /**
+     * @throws UnknownGroupException
+     */
+    public function addAlarm(mixed $room, mixed $time, mixed $frequency): array
+    {
+        $speakers = $this->getSpeakers();
+        foreach ($speakers as $speaker) {
+            if ($speaker['uuid'] == $room) {
+
+                // Add Alarm
+                $xml = <<<XML
+                    <u:CreateAlarm xmlns:u="urn:schemas-upnp-org:service:AlarmClock:1">
+                        <StartLocalTime>$time:00</StartLocalTime>
+                        <Duration>00:30:00</Duration>
+                        <Recurrence>DAILY</Recurrence>
+                        <Enabled>1</Enabled>
+                        <RoomUUID>$room</RoomUUID>
+                        <ProgramURI>x-rincon-buzzer:0</ProgramURI>
+                        <ProgramMetaData>string</ProgramMetaData>
+                        <PlayMode>NORMAL</PlayMode>
+                        <Volume>5</Volume>
+                        <IncludeLinkedZones>1</IncludeLinkedZones>
+                    </u:CreateAlarm>
+                XML;
+
+                $xml =
+
+                $alarm = new Alarm($xml, $this->network);
+                $ret = $speaker->getAlarms()->create($alarm);
+                print_r($ret);
+                return ["success" => "Alarm added", "alarm" => $ret, "xml" => $xml];
+            }
+        }
+        return ["error" => "Room not found"];
     }
 }
