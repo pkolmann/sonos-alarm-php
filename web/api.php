@@ -42,3 +42,21 @@ if (
     }
     print(json_encode($addAlarmRet));
 }
+
+if (
+    isset($_GET['cmd'])
+    && $_GET['cmd'] == "deleteAlarm"
+    && isset($_GET['alarmId'])
+)  {
+    $alarmId = $_GET['alarmId'];
+
+    $alarms = $sonosAlarm->getAlarms();
+    foreach ($alarms as $alarm) {
+        if ($alarm->getId() == $alarmId) {
+            $alarm->delete();
+            print(json_encode(["success" => "Alarm deleted"]));
+            exit;
+        }
+    }
+    print(json_encode(["error" => "Alarm not found!"]));
+}

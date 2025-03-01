@@ -28,6 +28,8 @@
                     if (!response.ok) {
                         throw new Error("Network response was not ok");
                     }
+
+                    document.getElementById("loader")['style'].display = "none";
                     return response.text();
                 })
                 .then(data => {
@@ -62,7 +64,42 @@
         }
 
         function editAlarm(alarmId) {
-            console.log("Edit alarm: " + alarmId);
+            console.log("Edit alarm: ", alarmId);
+            return true;
+        }
+
+        function deleteAlarm(alarmId) {
+            console.log("Deleting alarm: ", alarmId)
+
+            // activate the loader
+            document.getElementById("loader")['style'].display = "block";
+
+            fetch("api.php?cmd=deleteAlarm&alarmId=" + alarmId)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+
+                    document.getElementById("loader")['style'].display = "none";
+                    return response.text();
+                })
+                .then(data => {
+                    console.log(data);
+
+                    const json = JSON.parse(data);
+                    console.log("delete json: ", json);
+
+                    document.getElementById('alarm-' + alarmId + '-div').remove();
+
+                    // reset the loader
+                    document.getElementById("loader")['style'].display = "none";
+                })
+                .catch(error => {
+                    console.error("There has been a problem with your fetch operation:", error);
+
+                    // reset the loader
+                    document.getElementById("loader")['style'].display = "none";
+                });
             return true;
         }
 
@@ -136,10 +173,6 @@ $alarms = $sonosAlarm->getAlarms();
 $count = 0;
 echo "<div class = 'row'>";
 foreach ($alarms as $alarm) {
-    print "<pre>";
-    print_r($alarm);
-    print "</pre>";
-
     if ($count % 3 == 0) {
         echo "</div>" . PHP_EOL;
         echo "<div class = 'row mt-4'>" . PHP_EOL;
@@ -147,7 +180,7 @@ foreach ($alarms as $alarm) {
     $count++;
 
     $alarmId = $alarm->getId();
-    echo "<div class='col-sm-4'>" . PHP_EOL;
+    echo "<div id='alarm-$alarmId-div' class='col-sm-4'>" . PHP_EOL;
     echo "<div class='card position-relative'>" . PHP_EOL;
     echo "<div id='alarm-$alarmId-icon' class='card-icon' onclick='toggleAlarm($alarmId)'>" . ($alarm->isActive() ? "⏰" : "😴") . "</div>" . PHP_EOL;
     echo "<div class='card-body'>" . PHP_EOL;
@@ -179,6 +212,7 @@ foreach ($alarms as $alarm) {
 
     echo "<button type='button' class='btn btn-primary' onclick='toggleAlarm($alarmId)'>Toggle</button>" . PHP_EOL;
     echo "<button type='button' class='btn btn-primary' onclick='editAlarm($alarmId)'>Edit</button>" . PHP_EOL;
+    echo "<button type='button' class='btn btn-primary' onclick='deleteAlarm($alarmId)'>Delete</button>" . PHP_EOL;
 
     echo "</div>" . PHP_EOL; // card-body
     echo "</div>" . PHP_EOL; // card

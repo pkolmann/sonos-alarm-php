@@ -98,6 +98,7 @@ class SonosAlarm {
 
     /**
      * @throws UnknownGroupException
+     * @throws Exception
      */
     public function addAlarm(mixed $room, mixed $time, mixed $frequency): array
     {
@@ -107,26 +108,26 @@ class SonosAlarm {
 
                 // Add Alarm
                 $xml = <<<XML
-                    <u:CreateAlarm xmlns:u="urn:schemas-upnp-org:service:AlarmClock:1">
-                        <StartLocalTime>$time:00</StartLocalTime>
-                        <Duration>00:30:00</Duration>
-                        <Recurrence>DAILY</Recurrence>
-                        <Enabled>1</Enabled>
-                        <RoomUUID>$room</RoomUUID>
-                        <ProgramURI>x-rincon-buzzer:0</ProgramURI>
-                        <ProgramMetaData>string</ProgramMetaData>
-                        <PlayMode>NORMAL</PlayMode>
-                        <Volume>5</Volume>
-                        <IncludeLinkedZones>1</IncludeLinkedZones>
-                    </u:CreateAlarm>
+                    <Alarms>
+                        <Alarm
+                            ID="-1"
+                            StartTime="$time:00"
+                            Duration="00:10:00"
+                            Recurrence="WEEKDAYS" Enabled="0"
+                            RoomUUID="$room"
+                            ProgramURI="x-rincon-buzzer:0"
+                            ProgramMetaData="string"
+                            PlayMode="NORMAL" Volume="3" IncludeLinkedZones="0"
+                        />
+                    </Alarms>
                 XML;
 
-                $xml =
+                $parser = new duncan3dc\DomParser\XmlParser($xml);
+                $element = $parser->getTags("Alarm")[0];
 
-                $alarm = new Alarm($xml, $this->network);
-                $ret = $speaker->getAlarms()->create($alarm);
-                print_r($ret);
-                return ["success" => "Alarm added", "alarm" => $ret, "xml" => $xml];
+                $alarm = new Alarm($element, $this->network);
+                $alarm->create();
+                return ["success" => "Alarm added"];
             }
         }
         return ["error" => "Room not found"];
