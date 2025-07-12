@@ -1,0 +1,64 @@
+commit c44b9e5f2511e7df14bdf19df08040216acada99
+Author: Philipp Kolmann <philipp.kolmann@fhwn.ac.at>
+Date:   Sat Mar 1 18:22:45 2025 +0100
+
+    Add create() to Alarm class
+
+    Apply via:
+        cd vendor/duncan3dc/sonos
+        patch -p1 < ../../../duncan3dc_sonos.diff
+
+diff --git a/src/Alarm.php b/src/Alarm.php
+index 01414b5..b3a862a 100644
+--- a/src/Alarm.php
++++ b/src/Alarm.php
+@@ -636,15 +636,15 @@ final class Alarm implements AlarmInterface
+         unset($this->id);
+     }
+ 
+-
+     /**
+-     * Update the alarm with the current instance settings.
++     * Returns params array for Alarm creation and update.
+      *
+-     * @return $this
++     * @return array
+      */
+-    protected function save(): AlarmInterface
++
++    private function getParams(): array
+     {
+-        $params = [
++        return [
+             "StartLocalTime"        =>  $this->attributes["StartTime"],
+             "Duration"              =>  $this->attributes["Duration"],
+             "Recurrence"            =>  $this->attributes["Recurrence"],
+@@ -656,8 +656,27 @@ final class Alarm implements AlarmInterface
+             "Volume"                =>  $this->attributes["Volume"],
+             "IncludeLinkedZones"    =>  $this->attributes["IncludeLinkedZones"],
+         ];
++    }
+ 
+-        $this->soap("AlarmClock", "UpdateAlarm", $params);
++    /**
++     * Create the alarm with the current instance settings.
++     *
++     * @return $this
++     */
++    public function create(): AlarmInterface
++    {
++        $this->id = $this->soap("AlarmClock", "CreateAlarm", $this->getParams());
++        return $this;
++    }
++
++    /**
++     * Update the alarm with the current instance settings.
++     *
++     * @return $this
++     */
++    protected function save(): AlarmInterface
++    {
++        $this->soap("AlarmClock", "UpdateAlarm", $this->getParams());
+ 
+         return $this;
+     }

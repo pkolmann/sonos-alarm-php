@@ -126,7 +126,11 @@ class SonosAlarm {
                 $element = $parser->getTags("Alarm")[0];
 
                 $alarm = new Alarm($element, $this->network);
-                $alarm->create();
+                try {
+                    $alarm->create();
+                } catch (Exception $e) {
+                    return ["error" => "Failed to create alarm: " . $e->getMessage()];
+                }
                 return ["success" => "Alarm added"];
             }
         }
