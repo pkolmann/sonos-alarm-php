@@ -8,134 +8,7 @@
     <!-- include bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script>
-        function showSection(section) {
-            const sections = document.getElementsByClassName("content-section");
-            for (let i = 0; i < sections.length; i++) {
-                sections[i].classList.remove("active-section");
-            }
-            document.getElementById(section).classList.add("active-section");
-        }
-
-        function toggleAlarm(alarmId) {
-            console.log("Toggle alarm: " + alarmId);
-
-            // activate the loader
-            document.getElementById("loader")['style'].display = "block";
-
-            fetch("api.php?cmd=toggleAlarm&alarmId=" + alarmId)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Network response was not ok");
-                    }
-
-                    document.getElementById("loader")['style'].display = "none";
-                    return response.text();
-                })
-                .then(data => {
-                    console.log(data);
-
-                    // Update the UI
-                    const alarmEnabled = document.getElementById("alarm-" + alarmId + "-enabled");
-                    const alarmIcon = document.getElementById("alarm-" + alarmId + "-icon");
-                    if (data === "active") {
-                        console.log("updating to active");
-                        alarmEnabled.innerHTML = "<b>Enabled:</b> Active now (timestamp: " + new Date().toLocaleTimeString() + ")";
-                        alarmIcon.innerHTML = "⏰";
-
-                        // reset the loader
-                        document.getElementById("loader")['style'].display = "none";
-                    } else {
-                        console.log("updating to dormant");
-                        alarmEnabled.innerHTML = "<b>Enabled:</b> Dormant now (timestamp: " + new Date().toLocaleTimeString() + ")";
-                        alarmIcon.innerHTML = "😴";
-
-                        // reset the loader
-                        document.getElementById("loader")['style'].display = "none";
-                    }
-                })
-                .catch(error => {
-                    console.error("There has been a problem with your fetch operation:", error);
-
-                    // reset the loader
-                    document.getElementById("loader")['style'].display = "none";
-                });
-            return true;
-        }
-
-        function editAlarm(alarmId) {
-            console.log("Edit alarm: ", alarmId);
-            return true;
-        }
-
-        function deleteAlarm(alarmId) {
-            console.log("Deleting alarm: ", alarmId)
-
-            // activate the loader
-            document.getElementById("loader")['style'].display = "block";
-
-            fetch("api.php?cmd=deleteAlarm&alarmId=" + alarmId)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Network response was not ok");
-                    }
-
-                    document.getElementById("loader")['style'].display = "none";
-                    return response.text();
-                })
-                .then(data => {
-                    console.log(data);
-
-                    const json = JSON.parse(data);
-                    console.log("delete json: ", json);
-
-                    document.getElementById('alarm-' + alarmId + '-div').remove();
-
-                    // reset the loader
-                    document.getElementById("loader")['style'].display = "none";
-                })
-                .catch(error => {
-                    console.error("There has been a problem with your fetch operation:", error);
-
-                    // reset the loader
-                    document.getElementById("loader")['style'].display = "none";
-                });
-            return true;
-        }
-
-        function addAlarm() {
-            const room = document.getElementById("room").valueOf().value;
-            const time = document.getElementById("time").valueOf().value;
-            const frequency = document.getElementById("frequency").valueOf().value;
-
-            console.log("Add alarm: " + room + " " + time + " " + frequency);
-
-            // activate the loader
-            document.getElementById("loader")['style'].display = "block";
-
-            fetch("api.php?cmd=addAlarm&room=" + room + "&time=" + time + "&frequency=" + frequency)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Network response was not ok");
-                    }
-                    return response.text();
-                })
-                .then(data => {
-                    console.log(data);
-
-                    // reset the loader
-                    document.getElementById("loader")['style'].display = "none";
-                })
-                .catch(error => {
-                    console.error("There has been a problem with your fetch operation:", error);
-
-                    // reset the loader
-                    document.getElementById("loader")['style'].display = "none";
-                });
-
-            return true;
-        }
-    </script>
+    <script src="sonos-alarm.js"></script>
 </head>
 <body class="py-4">
 <div id="loader" class="loader"></div>
@@ -147,10 +20,10 @@
     <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link active" href="#" onclick="showSection('page1')">Home</a>
+          <a class="nav-link active" href="#" onclick="showSection('home')">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#" onclick="showSection('page2')">Add Alarm</a>
+          <a class="nav-link" href="#" onclick="showSection('add')">Add Alarm</a>
         </li>
       </ul>
     </div>
@@ -158,7 +31,7 @@
 </nav>
 
 <div class="container mt-4">
-    <div id="page1" class="content-section active-section">
+    <div id="home" class="content-section active-section">
 <?php
 
 use duncan3dc\Sonos\Exceptions\UnknownGroupException;
@@ -223,7 +96,7 @@ echo "</div>" . PHP_EOL; // row
 
 ?>
     </div>
-    <div id="page2" class="content-section">
+    <div id="add" class="content-section">
         <h2>Add Alarm</h2>
         <div class="form-group">
             <p>
