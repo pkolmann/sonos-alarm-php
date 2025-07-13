@@ -107,6 +107,7 @@ function addAlarm() {
             if (!response.ok) {
                 throw new Error("Network response was not ok");
             }
+            showSection('home');
             return response.text();
         })
         .then(data => {

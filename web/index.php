@@ -125,6 +125,7 @@ echo "</div>" . PHP_EOL; // row
                 <label for="frequency">Frequency:</label>
                 <select id="frequency" name="frequency" required>
                     <option value="">Select a frequency</option>
+                    <option value="0">Once</option>
                     <option value=127>Daily</option>
                     <option value=31>Weekdays</option>
                     <option value=96>Weekends</option>
