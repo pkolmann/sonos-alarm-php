@@ -29,93 +29,18 @@
     </div>
   </div>
 </nav>
+    <div class="error-message" id="error-message"></div>
 
 <div class="container mt-4">
     <div id="home" class="content-section active-section">
-<?php
-
-use duncan3dc\Sonos\Exceptions\UnknownGroupException;
-
-$appdir = dirname(__DIR__);
-require_once "$appdir/vendor/autoload.php";
-require_once "$appdir/lib/SonosAlarm.php";
-
-$sonosAlarm = new SonosAlarm();
-$alarms = $sonosAlarm->getAlarms();
-
-$count = 0;
-echo "<div class = 'row'>";
-foreach ($alarms as $alarm) {
-    if ($count % 3 == 0) {
-        echo "</div>" . PHP_EOL;
-        echo "<div class = 'row mt-4'>" . PHP_EOL;
-    }
-    $count++;
-
-    $alarmId = $alarm->getId();
-    echo "<div id='alarm-$alarmId-div' class='col-sm-4'>" . PHP_EOL;
-    echo "<div class='card position-relative'>" . PHP_EOL;
-    echo "<div id='alarm-$alarmId-icon' class='card-icon' onclick='toggleAlarm($alarmId)'>" . ($alarm->isActive() ? "⏰" : "😴") . "</div>" . PHP_EOL;
-    echo "<div class='card-body'>" . PHP_EOL;
-    echo "<h5 class='card-title'>Alarm</h5>" . PHP_EOL;
-
-    echo "<p>{$alarm->getTime()}@{$alarm->getFrequencyDescription()}</p>" . PHP_EOL;
-
-    echo "<ul>" . PHP_EOL;
-    echo "<li><b>Count:</b> $count</li>" . PHP_EOL;
-    echo "<li><b>Id:</b> $alarmId</li>" . PHP_EOL;
-    echo "<li><b>Time:</b> {$alarm->getTime()}</li>" . PHP_EOL;
-    echo "<li><b>FrequencyDescription:</b> {$alarm->getFrequencyDescription()}</li>" . PHP_EOL;
-    echo "<li><b>Frequency:</b> {$alarm->getFrequency()}</li>" . PHP_EOL;
-    echo "<li><b>Duration:</b> {$alarm->getDuration()}</li>" . PHP_EOL;
-    echo "<li id='alarm-$alarmId-enabled'><b>Enabled:</b> " . ($alarm->isActive() ? "Active" : "Dormant") . "</li>" . PHP_EOL;
-    try {
-        $title = $sonosAlarm->getMusicTitle($alarm->getMusic());
-    } catch (Exception $e) {
-        $title = "Error: " . $e->getMessage();
-    }
-    echo "<li><b>Music:</b> $title</li>" . PHP_EOL;
-    echo "<li><b>Repeat:</b> " . ($alarm->getRepeat() ? "Repeat" : "No Repeat") . "</li>" . PHP_EOL;
-    echo "<li><b>Room:</b> {$alarm->getRoom()}</li>" . PHP_EOL;
-    echo "<li><b>SpeakerName:</b> {$alarm->getSpeaker()->getName()}</li>" . PHP_EOL;
-    echo "<li><b>SpeakerRoom:</b> {$alarm->getSpeaker()->getRoom()}</li>" . PHP_EOL;
-    echo "<li><b>Volume:</b> {$alarm->getVolume()}</li>" . PHP_EOL;
-    echo "<li><b>Shuffle:</b> " . ($alarm->getShuffle() ? "Shuffle" : "No Shuffle") . "</li>" . PHP_EOL;
-    echo "</ul>" . PHP_EOL;
-
-    echo "<button type='button' class='btn btn-primary' onclick='toggleAlarm($alarmId)'>Toggle</button>" . PHP_EOL;
-    echo "<button type='button' class='btn btn-primary' onclick='editAlarm($alarmId)'>Edit</button>" . PHP_EOL;
-    echo "<button type='button' class='btn btn-primary' onclick='deleteAlarm($alarmId)'>Delete</button>" . PHP_EOL;
-
-    echo "</div>" . PHP_EOL; // card-body
-    echo "</div>" . PHP_EOL; // card
-    echo "</div>" . PHP_EOL; // col-sm-4
-}
-echo "</div>" . PHP_EOL; // row
-
-
-?>
-    </div>
+        <div class="row" id="alarm-list">
+        </div></div>
     <div id="add" class="content-section">
         <h2>Add Alarm</h2>
         <div class="form-group">
             <p>
                 <label for="room">Room:</label>
-                <select id="room" name="room" required>
-                    <?php
-                    try {
-                        $speakers = $sonosAlarm->getSpeakers();
-                    } catch (UnknownGroupException $e) {
-                        $speakers = [];
-                    }
-                    print "<option value=''>Select a room</option>";
-                        foreach ($speakers as $speaker) {
-                            $room = $speaker['room'];
-                            $roomId = $speaker['uuid'];
-                            echo "<option value='$roomId'>$room</option>" . PHP_EOL;
-                        }
-                    ?>
-                </select>
+                <select id="room" name="room" required></select>
             </p>
             <p>
                 <label for="time">Time:</label>
