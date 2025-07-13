@@ -85,8 +85,7 @@ if ($_GET['cmd'] == "toggleAlarm"&& isset($_GET['alarmId'])) {
 }
 
 if (
-    isset($_GET['cmd'])
-    && $_GET['cmd'] == "addAlarm"
+    $_GET['cmd'] == "addAlarm"
     && isset($_GET['room'])
     && isset($_GET['time'])
     && isset($_GET['frequency'])
@@ -99,24 +98,14 @@ if (
     try {
         // find speaker by room
         $speaker = $sonos->getSpeakerByRoom($room);
-        logger("Found speaker: " . $speaker->getName() . " in room: $room");
         $newAlarm = $sonos->createAlarm($speaker);
-        logger("Created alarm object for speaker: " . $speaker->getName());
         $newAlarm->setTime(Time::parse($time));
-        logger("Setting alarm time: $time");
         $newAlarm->setFrequency($frequency);
-        logger("Setting alarm frequency: $frequency");
         $newAlarm->setMusic(new Uri("x-rincon-mp3radio://streaming.radio.co/sd0c4f2b1c/listen", ""));
-        logger("Setting alarm music to streaming.radio.co");
         $newAlarm->setDuration(Time::parse(600)); // 10 minutes
-        logger("Setting alarm duration to 600 seconds (10 minutes)");
         $newAlarm->setVolume(5); // 20% volume
-        logger("Setting alarm volume to 5 (20%)");
         $newAlarm->setShuffle(false);
-        logger("Setting alarm shuffle to false");
         $newAlarm->setRepeat(false);
-        logger("Setting alarm repeat to false");
-        logger("Setting alarm properties: time=$time, frequency=$frequency, music=streaming.radio.co, duration=600, volume=5, shuffle=false, repeat=false");
         $newAlarm->activate();
         logger("Alarm activated successfully in room: $room");
 
