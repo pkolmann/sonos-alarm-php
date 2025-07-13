@@ -2,6 +2,8 @@
 
 use duncan3dc\Sonos\Exceptions\NotFoundException;
 use duncan3dc\Sonos\Network;
+use duncan3dc\Sonos\Uri;
+use duncan3dc\Sonos\Utils\Time;
 
 header('Content-Type: application/json');
 
@@ -63,7 +65,7 @@ if ($_GET['cmd'] == "getRooms") {
 
     try {
         $speakers = $sonosAlarm->getSpeakers();
-    } catch (UnknownGroupException $e) {
+    } catch (Exception $e) {
         $speakers = [];
     }
     foreach ($speakers as $speaker) {
@@ -100,13 +102,13 @@ if (
         logger("Found speaker: " . $speaker->getName() . " in room: $room");
         $newAlarm = $sonos->createAlarm($speaker);
         logger("Created alarm object for speaker: " . $speaker->getName());
-        $newAlarm->setTime($time);
+        $newAlarm->setTime(Time::parse($time));
         logger("Setting alarm time: $time");
         $newAlarm->setFrequency($frequency);
         logger("Setting alarm frequency: $frequency");
-        $newAlarm->setMusic("x-rincon-mp3radio://streaming.radio.co/sd0c4f2b1c/listen");
+        $newAlarm->setMusic(new Uri("x-rincon-mp3radio://streaming.radio.co/sd0c4f2b1c/listen", ""));
         logger("Setting alarm music to streaming.radio.co");
-        $newAlarm->setDuration(600); // 10 minutes
+        $newAlarm->setDuration(Time::parse(600)); // 10 minutes
         logger("Setting alarm duration to 600 seconds (10 minutes)");
         $newAlarm->setVolume(5); // 20% volume
         logger("Setting alarm volume to 5 (20%)");
@@ -126,10 +128,8 @@ if (
         logger("Error: " . $error['error']);
         exit;
     } catch (Exception $e) {
-        $addAlarmRet = $sonosAlarm->addAlarm($room, $time, $frequency);
-    } catch (Exception $e) {
         $error = [
-            "error" => "An unknown error occurred while adding the alarm: " . $e->getMessage()
+            "error" => "An unknown error occurred while adding the alarm (line: {$e->getFile()}:{$e->getLine()}: " . $e->getMessage()
         ];
         print(json_encode($error));
         logger("Error: " . $error['error']);

@@ -137,7 +137,7 @@ function populateAddAlarmSection() {
             json.forEach(room => {
                 console.log("Room: ", room);
                 const option = document.createElement("option");
-                option.value = room['uuid'];
+                option.value = room['name'];
                 option.textContent = room['name'];
                 roomSelect.appendChild(option);
             });
