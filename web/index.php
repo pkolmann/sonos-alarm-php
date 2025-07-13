@@ -111,8 +111,7 @@ echo "</div>" . PHP_EOL; // row
                     print "<option value=''>Select a room</option>";
                         foreach ($speakers as $speaker) {
                             $room = $speaker['room'];
-                            $roomId = $speaker['uuid'];
-                            echo "<option value='$roomId'>$room</option>" . PHP_EOL;
+                            echo "<option value='$room'>$room</option>" . PHP_EOL;
                         }
                     ?>
                 </select>
