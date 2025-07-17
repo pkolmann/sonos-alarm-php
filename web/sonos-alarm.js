@@ -262,15 +262,9 @@ function addAlarm() {
         })
         .then(data => {
             console.log(data);
-
-            // reset the loader
-            document.getElementById("loader")['style'].display = "none";
         })
         .catch(error => {
             console.error("There has been a problem with your fetch operation:", error);
-
-            // reset the loader
-            document.getElementById("loader")['style'].display = "none";
         });
 
     return true;
