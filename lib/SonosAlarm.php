@@ -95,45 +95,4 @@ class SonosAlarm {
         }
         return $result;
     }
-
-    /**
-     * @throws UnknownGroupException
-     * @throws Exception
-     */
-    public function addAlarm(mixed $room, mixed $time, mixed $frequency): array
-    {
-        $speakers = $this->getSpeakers();
-        foreach ($speakers as $speaker) {
-            if ($speaker['uuid'] == $room) {
-
-                // Add Alarm
-                $xml = <<<XML
-                    <Alarms>
-                        <Alarm
-                            ID="-1"
-                            StartTime="$time:00"
-                            Duration="00:10:00"
-                            Recurrence="WEEKDAYS" Enabled="0"
-                            RoomUUID="$room"
-                            ProgramURI="x-rincon-buzzer:0"
-                            ProgramMetaData="string"
-                            PlayMode="NORMAL" Volume="3" IncludeLinkedZones="0"
-                        />
-                    </Alarms>
-                XML;
-
-                $parser = new duncan3dc\DomParser\XmlParser($xml);
-                $element = $parser->getTags("Alarm")[0];
-
-                $alarm = new Alarm($element, $this->network);
-                try {
-                    $alarm->create();
-                } catch (Exception $e) {
-                    return ["error" => "Failed to create alarm: " . $e->getMessage()];
-                }
-                return ["success" => "Alarm added"];
-            }
-        }
-        return ["error" => "Room not found"];
-    }
 }
