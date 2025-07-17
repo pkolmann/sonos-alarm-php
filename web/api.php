@@ -99,7 +99,7 @@ if (
         // find speaker by room
         $speaker = $sonos->getSpeakerByRoom($room);
         $newAlarm = $sonos->createAlarm($speaker);
-        $newAlarm->setTime(Time::parse($time));
+        $newAlarm->setTime(Time::parse("$time:00")); // Set time in HH:MM:SS format
         $newAlarm->setFrequency($frequency);
         $newAlarm->setMusic(new Uri("x-rincon-mp3radio://streaming.radio.co/sd0c4f2b1c/listen", ""));
         $newAlarm->setDuration(Time::parse(600)); // 10 minutes
