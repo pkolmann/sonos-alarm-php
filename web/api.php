@@ -133,7 +133,7 @@ if (
         exit;
     }
     // Validate frequency
-    if (empty($frequency) || !is_numeric($frequency)) {
+    if (!is_numeric($frequency)) {
         $error = [
             "error" => "Frequency must be a numeric value"
         ];
