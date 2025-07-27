@@ -29,7 +29,8 @@ foreach ($alarms as $alarm) {
     echo "Frequency:            " .$alarm->getFrequency() . PHP_EOL;
     echo "Duration:             " . $alarm->getDuration() . PHP_EOL;
     echo "Enabled:              " . ($alarm->isActive() ? "Active" : "Dormant") . PHP_EOL;
-    echo "Music:                " . $alarm->getMusic()->getMetaData() . PHP_EOL;
+    echo "Music:           URI: " . $alarm->getMusic()->getUri() . PHP_EOL;
+    echo "            Metadata: " . $alarm->getMusic()->getMetaData() . PHP_EOL;
     echo "Repeat:               " .($alarm->getRepeat() ? "Repeat" : "No Repeat") . PHP_EOL;
     echo "Room:                 " . $alarm->getRoom() . PHP_EOL;
     echo "SpeakerName:          " . $alarm->getSpeaker()->getName() . PHP_EOL;

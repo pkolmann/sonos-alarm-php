@@ -120,7 +120,7 @@ function populateAddAlarmSection() {
     document.getElementById("loader").style.display = "block";
 
     // fetch the content for the section
-    fetch("api.php?cmd=getRooms")
+    fetch("api.php?cmd=getAlarmDetails")
         .then(response => {
             if (!response.ok) {
                 throw new Error("Network response was not ok");
@@ -129,17 +129,31 @@ function populateAddAlarmSection() {
         })
         .then(data => {
             const json = JSON.parse(data);
-            console.log("Rooms JSON response: ", json);
+            const rooms = json['rooms'];
+            const music = json['music'];
+            console.log("Rooms JSON response: ", rooms);
+            console.log("Music JSON response: ", music);
 
             // populate the room select element
             const roomSelect = document.getElementById("room");
             roomSelect.innerHTML = ""; // clear existing options
-            json.forEach(room => {
+            rooms.forEach(room => {
                 console.log("Room: ", room);
                 const option = document.createElement("option");
                 option.value = room['name'];
                 option.textContent = room['name'];
                 roomSelect.appendChild(option);
+            });
+
+            // populate the music select element
+            const musicSelect = document.getElementById("music");
+            musicSelect.innerHTML = ""; // clear existing options
+            music.forEach(station => {
+                console.log("Music station: ", station);
+                const option = document.createElement("option");
+                option.value = station['uri'];
+                option.textContent = station['title'];
+                musicSelect.appendChild(option);
             });
 
             // hide the loader
@@ -245,14 +259,21 @@ function deleteAlarm(alarmId) {
 function addAlarm() {
     const room = document.getElementById("room").valueOf().value;
     const time = document.getElementById("time").valueOf().value;
+    const music = document.getElementById("music").valueOf().value;
     const frequency = document.getElementById("frequency").valueOf().value;
 
-    console.log("Add alarm: " + room + " " + time + " " + frequency);
+    console.log("Add alarm: " + room + " " + time + " " + music + " " + frequency);
 
     // activate the loader
     document.getElementById("loader")['style'].display = "block";
 
-    fetch("api.php?cmd=addAlarm&room=" + room + "&time=" + time + "&frequency=" + frequency)
+    let url = new URL("api.php", window.location.href);
+    url.searchParams.append("cmd", "addAlarm");
+    url.searchParams.append("room", room);
+    url.searchParams.append("time", time);
+    url.searchParams.append("music", music);
+    url.searchParams.append("frequency", frequency);
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error("Network response was not ok");

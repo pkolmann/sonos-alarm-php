@@ -60,8 +60,10 @@ if ($_GET['cmd'] == "getAlarms") {
     exit;
 }
 
-if ($_GET['cmd'] == "getRooms") {
-    $rooms = [];
+if ($_GET['cmd'] == "getAlarmDetails") {
+    $details = [];
+    $details['rooms'] = [];
+    $details['music'] = [];
 
     try {
         $speakers = $sonosAlarm->getSpeakers();
@@ -69,13 +71,28 @@ if ($_GET['cmd'] == "getRooms") {
         $speakers = [];
     }
     foreach ($speakers as $speaker) {
-        $rooms[] = [
+        $details['rooms'][] = [
             "name" => $speaker['room'],
             "uuid" => $speaker['uuid'],
             "ip" => $speaker['ip']
         ];
     }
-    print(json_encode($rooms));
+    foreach ($alarms as $alarm) {
+        try {
+            // if uri is already in details, skip it
+            if (in_array($alarm->getMusic()->getUri(), array_column($details['music'], 'uri'))) {
+                continue;
+            }
+
+            $details['music'][] = [
+                "title" => $sonosAlarm->getMusicTitle($alarm->getMusic()),
+                "uri" => $alarm->getMusic()->getUri()
+            ];
+        } catch (Exception $e) {
+            // If there is an error getting the music title, ignore it
+        }
+    }
+    print(json_encode($details));
     exit;
 }
 
@@ -92,8 +109,64 @@ if (
 ) {
     $room = $_GET['room'];
     $time = $_GET['time'];
+    $music = $_GET['music'] ?? null;
     $frequency = $_GET['frequency'];
-    logger("Adding alarm in room: $room at time: $time with frequency: $frequency");
+    logger("Adding alarm in room: $room at time: $time with frequency: $frequency and music: $music");
+
+    // Validate room
+    if (empty($room)) {
+        $error = [
+            "error" => "Room is required"
+        ];
+        print(json_encode($error));
+        logger("Error: " . $error['error']);
+        exit;
+    }
+    // Validate time
+    if (empty($time) || !preg_match('/^\d{2}:\d{2}$/', $time)) {
+        $error = [
+            "error" => "Time must be in HH:MM format"
+        ];
+        print(json_encode($error));
+        logger("Error: " . $error['error']);
+        exit;
+    }
+    // Validate frequency
+    if (empty($frequency) || !is_numeric($frequency)) {
+        $error = [
+            "error" => "Frequency must be a numeric value"
+        ];
+        print(json_encode($error));
+        logger("Error: " . $error['error']);
+        exit;
+    }
+
+    // Validate music
+    $musicMetadata = null;
+    if (empty($music)) {
+        $error = [
+            "error" => "Music URI is required"
+        ];
+        print(json_encode($error));
+        logger("Error: " . $error['error']);
+        exit;
+    } else {
+        // check if music url is in $alarms
+        foreach ($alarms as $alarm) {
+            if ($alarm->getMusic()->getUri() == $music) {
+                $musicMetadata = $alarm->getMusic()->getMetaData();
+                break;
+            }
+        }
+        if (empty($musicMetadata)) {
+            $error = [
+                "error" => "Music URI not found in existing alarms"
+            ];
+            print(json_encode($error));
+            logger("Error: " . $error['error']);
+            exit;
+        }
+    }
 
     try {
         // find speaker by room
@@ -101,7 +174,7 @@ if (
         $newAlarm = $sonos->createAlarm($speaker);
         $newAlarm->setTime(Time::parse("$time:00")); // Set time in HH:MM:SS format
         $newAlarm->setFrequency($frequency);
-        $newAlarm->setMusic(new Uri("x-rincon-mp3radio://streaming.radio.co/sd0c4f2b1c/listen", ""));
+        $newAlarm->setMusic(new Uri($music, $musicMetadata));
         $newAlarm->setDuration(Time::parse(600)); // 10 minutes
         $newAlarm->setVolume(5); // 20% volume
         $newAlarm->setShuffle(false);

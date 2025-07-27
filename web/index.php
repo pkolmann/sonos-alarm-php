@@ -47,6 +47,10 @@
                 <input id="time" type="time" name="time" required>
             </p>
             <p>
+                <label for="music">Music:</label>
+                <select id="music" name="music" required></select>
+            </p>
+            <p>
                 <label for="frequency">Frequency:</label>
                 <select id="frequency" name="frequency" required>
                     <option value="">Select a frequency</option>
