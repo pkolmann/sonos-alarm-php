@@ -261,8 +261,9 @@ function addAlarm() {
     const time = document.getElementById("time").valueOf().value;
     const music = document.getElementById("music").valueOf().value;
     const frequency = document.getElementById("frequency").valueOf().value;
+    const duration = document.getElementById("duration").valueOf().value;
 
-    console.log("Add alarm: " + room + " " + time + " " + music + " " + frequency);
+    console.log("Add alarm: " + room + " " + time + " " + music + " " + frequency + " " + duration);
 
     // activate the loader
     document.getElementById("loader")['style'].display = "block";
@@ -273,6 +274,7 @@ function addAlarm() {
     url.searchParams.append("time", time);
     url.searchParams.append("music", music);
     url.searchParams.append("frequency", frequency);
+    url.searchParams.append("duration", duration);
     fetch(url)
         .then(response => {
             if (!response.ok) {

@@ -111,7 +111,8 @@ if (
     $time = $_GET['time'];
     $music = $_GET['music'] ?? null;
     $frequency = $_GET['frequency'];
-    logger("Adding alarm in room: $room at time: $time with frequency: $frequency and music: $music");
+    $duration = $_GET['duration'] ?? 600;
+    logger("Adding alarm in room: $room at time: $time with frequency: $frequency and music: $music for duration: $duration seconds");
 
     // Validate room
     if (empty($room)) {
@@ -175,8 +176,8 @@ if (
         $newAlarm->setTime(Time::parse("$time:00")); // Set time in HH:MM:SS format
         $newAlarm->setFrequency($frequency);
         $newAlarm->setMusic(new Uri($music, $musicMetadata));
-        $newAlarm->setDuration(Time::parse(600)); // 10 minutes
-        $newAlarm->setVolume(5); // 20% volume
+        $newAlarm->setDuration(Time::parse($duration)); // 10 minutes
+        $newAlarm->setVolume(5); // 5% volume
         $newAlarm->setShuffle(false);
         $newAlarm->setRepeat(false);
         $newAlarm->activate();

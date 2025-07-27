@@ -69,6 +69,18 @@
                     </optgroup>
                 </select>
             </p>
+            <p>
+                <label for="duration">Duration:</label>
+                <select id="duration" name="duration" required>
+                    <option value="300">5 minutes</option>
+                    <option selected value="600">10 minutes</option>
+                    <option value="900">15 minutes</option>
+                    <option value="1200">20 minutes</option>
+                    <option value="18000">30 minutes</option>
+                    <option value="3600">1 hour</option>
+                    <option value="7200">2 hours</option>
+                </select>
+            </p>
 
             <button class="btn btn-primary" onclick="addAlarm()">Add Alarm</button>
         </div>
