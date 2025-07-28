@@ -56,6 +56,15 @@ if ($_GET['cmd'] == "getAlarms") {
             "shuffle" => $alarm->getShuffle(),
         ];
     }
+
+    // sort alarms by time and room
+    usort($alarmsData, function ($a, $b) {
+        if ($a['time'] == $b['time']) {
+            return strcmp($a['room'], $b['room']);
+        }
+        return strcmp($a['time'], $b['time']);
+    });
+
     print(json_encode($alarmsData));
     exit;
 }
