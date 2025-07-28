@@ -57,7 +57,7 @@ function populateHomeSection() {
                 console.log("Alarm: ", alarm);
                 const alarmDiv = document.createElement('div');
                 alarmDiv.id = 'alarm-' + alarm.id + '-div';
-                alarmDiv.className = 'col-sm-4';
+                alarmDiv.className = 'col-sm-12 col-md-6 col-lg-4 mb-4';
 
                 let alarmIcon = alarm.enabled ? "⏰" : "😴";
 

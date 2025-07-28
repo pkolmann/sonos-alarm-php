@@ -15,7 +15,7 @@
 <div class="container">
 <h1>Sonos Wecker</h1>
 
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
+<nav class="navbar navbar-expand bg-body-tertiary">
   <div class="container-fluid">
     <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
