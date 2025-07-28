@@ -12,6 +12,41 @@ function showSection(section) {
     }
 }
 
+function formatDuration(alarmDuration) {
+    if (alarmDuration === null || alarmDuration === undefined) {
+        return "N/A";
+    }
+
+    // split the duration string into hours, minutes, and seconds
+    const parts = alarmDuration.split(':');
+    let hours = 0, minutes = 0, seconds = 0;
+    if (parts.length === 3) {
+        hours = parseInt(parts[0], 10);
+        minutes = parseInt(parts[1], 10);
+        seconds = parseInt(parts[2], 10);
+    } else if (parts.length === 2) {
+        minutes = parseInt(parts[0], 10);
+        seconds = parseInt(parts[1], 10);
+    } else if (parts.length === 1) {
+        seconds = parseInt(parts[0], 10);
+    }
+
+    // format the duration string
+    let formattedDuration = "";
+    if (hours > 0) {
+        formattedDuration += hours + "h ";
+    }
+    if (minutes > 0) {
+        formattedDuration += minutes + "m ";
+    }
+    if (seconds > 0 || formattedDuration === "") {
+        formattedDuration += seconds + "s";
+    }
+
+    return formattedDuration.trim();
+
+}
+
 function populateHomeSection() {
     console.log("Showing home section");
     // activate the loader
@@ -66,13 +101,12 @@ function populateHomeSection() {
                     <div class='card position-relative'>
                     <div id='alarm-${alarm.id}-icon' class='card-icon' onclick='toggleAlarm(${alarm.id})'>${alarmIcon}</div>
                     <div class='card-body'>
-                    <h5 class='card-title'>${alarm.time} @ ${alarm['frequencyDescription']}</h5>
-                    <p>${alarm['room']}</p>
+                    <h5 class='card-title'>${alarm.time} @ ${alarm['room']}</h5>
+                    <p>${alarm['frequencyDescription']}</p>
                     
                     <p><ul>
-                        <li><b>ID:</b>${alarm.id}</li>
                         <li id='alarm-${alarm.id}-enabled'><b>Enabled:</b> ${alarm.enabled ? "Active" : "Dormant"}</li>
-                        <li><b>Duration:</b> ${alarm['duration']}</li>
+                        <li><b>Duration:</b> ${formatDuration(alarm['duration'])}</li>
                         <li><b>Music:</b> ${alarm['music']}</li>
                         <li><b>Repeat:</b> ${alarm['repeat'] ? "Repeat" : "Once"}</li>
                         <li><b>Volume:</b> ${alarm['volume']}</li>
