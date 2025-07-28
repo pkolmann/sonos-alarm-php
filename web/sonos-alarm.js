@@ -51,9 +51,11 @@ function populateHomeSection() {
     console.log("Showing home section");
     // activate the loader
     document.getElementById("loader").style.display = "block";
+    let url = new URL("api.php", window.location.href);
+    url.searchParams.append("cmd", "getAlarms");
 
     // fetch the content for the section
-    fetch("api.php?cmd=getAlarms")
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 let errorMessage = document.getElementById("error-message");
@@ -152,9 +154,11 @@ function populateAddAlarmSection() {
 
     // activate the loader
     document.getElementById("loader").style.display = "block";
+    let url = new URL("api.php", window.location.href);
+    url.searchParams.append("cmd", "getAlarmDetails");
 
     // fetch the content for the section
-    fetch("api.php?cmd=getAlarmDetails")
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error("Network response was not ok");
@@ -209,8 +213,11 @@ function toggleAlarm(alarmId) {
 
     // activate the loader
     document.getElementById("loader")['style'].display = "block";
+    let url = new URL("api.php", window.location.href);
+    url.searchParams.append("cmd", "toggleAlarm");
+    url.searchParams.append("alarmId", alarmId);
 
-    fetch("api.php?cmd=toggleAlarm&alarmId=" + alarmId)
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error("Network response was not ok");
@@ -261,7 +268,10 @@ function deleteAlarm(alarmId) {
     // activate the loader
     document.getElementById("loader")['style'].display = "block";
 
-    fetch("api.php?cmd=deleteAlarm&alarmId=" + alarmId)
+    let url = new URL("api.php", window.location.href);
+    url.searchParams.append("cmd", "deleteAlarm");
+    url.searchParams.append("alarmId", alarmId);
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error("Network response was not ok");
