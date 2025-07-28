@@ -83,6 +83,7 @@
             </p>
 
             <button class="btn btn-primary" onclick="addAlarm()">Add Alarm</button>
+            <button class="btn btn-secondary" onclick="showSection('home')">Cancel</button>
         </div>
     </div>
 </div>
