@@ -36,7 +36,7 @@
         <div class="row" id="alarm-list">
         </div></div>
     <div id="add" class="content-section">
-        <h2>Add Alarm</h2>
+        <h2 id="addAlarmH2">Add Alarm</h2>
         <div class="form-group">
             <p>
                 <label for="room">Room:</label>
@@ -76,13 +76,13 @@
                     <option selected value="600">10 minutes</option>
                     <option value="900">15 minutes</option>
                     <option value="1200">20 minutes</option>
-                    <option value="18000">30 minutes</option>
+                    <option value="1800">30 minutes</option>
                     <option value="3600">1 hour</option>
                     <option value="7200">2 hours</option>
                 </select>
             </p>
 
-            <button class="btn btn-primary" onclick="addAlarm()">Add Alarm</button>
+            <button class="btn btn-primary" id="addAlarmBtn" onclick="addAlarm()">Add Alarm</button>
             <button class="btn btn-secondary" onclick="showSection('home')">Cancel</button>
         </div>
     </div>

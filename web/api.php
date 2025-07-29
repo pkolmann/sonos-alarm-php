@@ -73,6 +73,7 @@ if ($_GET['cmd'] == "getAlarmDetails") {
     $details = [];
     $details['rooms'] = [];
     $details['music'] = [];
+    $details['alarms'] = [];
 
     try {
         $speakers = $sonosAlarm->getSpeakers();
@@ -86,6 +87,36 @@ if ($_GET['cmd'] == "getAlarmDetails") {
             "ip" => $speaker['ip']
         ];
     }
+
+    if (array_key_exists('alarmId', $_GET)) {
+        // if alarmId is set, get only the details for that alarm
+        foreach ($alarms as $alarm) {
+            if ($alarm->getId() == $_GET['alarmId']) {
+                try {
+                    $title = $sonosAlarm->getMusicTitle($alarm->getMusic());
+                } catch (Exception $e) {
+                    $title = "Error: " . $e->getMessage();
+                }
+
+                $details['alarms'][] = [
+                    "id" => $alarm->getId(),
+                    "time" => $alarm->getTime()->format("%H:%M:%S"),
+                    "room" => $alarm->getSpeaker()->getRoom(),
+                    "frequency" => $alarm->getFrequency(),
+                    "frequencyDescription" => $alarm->getFrequencyDescription(),
+                    "enabled" => $alarm->isActive(),
+                    "duration" => $alarm->getDuration()->asInt(),
+                    "musicUri" => $alarm->getMusic()->getUri(),
+                    "title" => $title,
+                    "repeat" => $alarm->getRepeat(),
+                    "volume" => $alarm->getVolume(),
+                    "shuffle" => $alarm->getShuffle()
+                ];
+                break;
+            }
+        }
+    }
+
     foreach ($alarms as $alarm) {
         try {
             // if uri is already in details, skip it
@@ -121,7 +152,21 @@ if (
     $music = $_GET['music'] ?? null;
     $frequency = $_GET['frequency'];
     $duration = $_GET['duration'] ?? 600;
-    logger("Adding alarm in room: $room at time: $time with frequency: $frequency and music: $music for duration: $duration seconds");
+
+    $alarmId = $_GET['alarmId'] ?? null;
+
+    if ($alarmId) {
+        // If alarmId is set, we are updating an existing alarm
+        foreach ($alarms as $alarm) {
+            if ($alarm->getId() == $alarmId) {
+                $room = $alarm->getSpeaker()->getRoom(); // Use the room from the existing alarm
+                break;
+            }
+        }
+        logger("Updating alarm in room: $room at time: $time with frequency: $frequency and music: $music for duration: $duration seconds");
+    } else {
+        logger("Adding alarm in room: $room at time: $time with frequency: $frequency and music: $music for duration: $duration seconds");
+    }
 
     // Validate room
     if (empty($room)) {
@@ -179,19 +224,44 @@ if (
     }
 
     try {
-        // find speaker by room
-        $speaker = $sonos->getSpeakerByRoom($room);
-        $newAlarm = $sonos->createAlarm($speaker);
-        $newAlarm->setTime(Time::parse("$time:00")); // Set time in HH:MM:SS format
-        $newAlarm->setFrequency($frequency);
-        $newAlarm->setMusic(new Uri($music, $musicMetadata));
-        $newAlarm->setDuration(Time::parse($duration)); // 10 minutes
-        $newAlarm->setVolume(5); // 5% volume
-        $newAlarm->setShuffle(false);
-        $newAlarm->setRepeat(false);
-        $newAlarm->activate();
-        logger("Alarm activated successfully in room: $room");
-
+        if ($alarm == null) {
+            // find speaker by room
+            $speaker = $sonos->getSpeakerByRoom($room);
+            $newAlarm = $sonos->createAlarm($speaker);
+            $newAlarm->setTime(Time::parse("$time:00")); // Set time in HH:MM:SS format
+            $newAlarm->setFrequency($frequency);
+            $newAlarm->setMusic(new Uri($music, $musicMetadata));
+            $newAlarm->setDuration(Time::parse($duration)); // 10 minutes
+            $newAlarm->setVolume(5); // 5% volume
+            $newAlarm->setShuffle(false);
+            $newAlarm->setRepeat(false);
+            $newAlarm->activate();
+            logger("Alarm activated successfully in room: $room");
+        } else {
+            // Update existing alarm
+            if ($alarm->getTime()->format("%H:%M") !== $time) {
+                logger("Updating alarm time from " . $alarm->getTime()->format("%H:%M") . " to $time");
+                $alarm->setTime(Time::parse("$time:00")); // Set time in HH:MM:SS format
+            }
+            if ($alarm->getFrequency() != $frequency) {
+                logger("Updating alarm frequency from " . $alarm->getFrequency() . " to $frequency");
+                $alarm->setFrequency($frequency);
+            }
+            if ($alarm->getMusic()->getUri() !== $music) {
+                logger("Updating alarm music from " . $alarm->getMusic()->getUri() . " to $music");
+                $alarm->setMusic(new Uri($music, $musicMetadata));
+            }
+            if ($alarm->getDuration()->asInt() != $duration) {
+                logger("Updating alarm duration from " . $alarm->getDuration()->asInt() . " to $duration");
+                $alarm->setDuration(Time::parse($duration)); // 10 minutes
+            }
+            if ($alarm->getVolume() != 5) {
+                logger("Updating alarm volume from " . $alarm->getVolume() . " to 5");
+                $alarm->setVolume(5); // 5% volume
+            }
+            $newAlarm = $alarm;
+            logger("Alarm updated successfully in room: $room");
+        }
     } catch (NotFoundException $e) {
         $error = [
             "error" => "Speaker not found in room: $room. Please check the room name. (" . $e->getMessage() . ")"

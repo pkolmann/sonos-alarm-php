@@ -1,4 +1,4 @@
-function showSection(section) {
+function showSection(section, alarmId = null) {
     const sections = document.getElementsByClassName("content-section");
     for (let i = 0; i < sections.length; i++) {
         sections[i].classList.remove("active-section");
@@ -8,7 +8,7 @@ function showSection(section) {
     if (section === 'home') {
         populateHomeSection();
     } else if (section === 'add') {
-        populateAddAlarmSection();
+        populateAddAlarmSection(alarmId);
     }
 }
 
@@ -149,13 +149,28 @@ function populateHomeSection() {
         });
 }
 
-function populateAddAlarmSection() {
-    console.log("Showing add alarm section");
+function populateAddAlarmSection(alarmId = null) {
+    if (alarmId) {
+        console.log("Editing alarm with ID: " + alarmId);
+        document.getElementById("addAlarmH2").innerText = "Update Alarm";
+        document.getElementById("addAlarmBtn").innerText = "Update Alarm";
+        document.getElementById("addAlarmBtn").onclick = function() { addAlarm(alarmId); };
+    } else {
+        console.log("Showing add alarm section");
+        document.getElementById("addAlarmH2").innerText = "Add Alarm";
+        document.getElementById("addAlarmBtn").innerText = "Add Alarm";
+        document.getElementById("addAlarmBtn").onclick = function() { addAlarm(); };
+        document.getElementById("time").value = "--:--"; // reset time input
+    }
 
     // activate the loader
+    console.log("activating loader for add alarm section");
     document.getElementById("loader").style.display = "block";
     let url = new URL("api.php", window.location.href);
     url.searchParams.append("cmd", "getAlarmDetails");
+    if (alarmId) {
+        url.searchParams.append("alarmId", alarmId);
+    }
 
     // fetch the content for the section
     fetch(url)
@@ -169,8 +184,79 @@ function populateAddAlarmSection() {
             const json = JSON.parse(data);
             const rooms = json['rooms'];
             const music = json['music'];
+            const alarms = json['alarms'];
             console.log("Rooms JSON response: ", rooms);
             console.log("Music JSON response: ", music);
+            console.log("Alarms JSON response: ", alarms);
+
+            let alarm = null;
+            if (alarmId) {
+                // find the alarm with the given ID
+                alarm = alarms.find(a => a.id === alarmId);
+                console.log("Editing alarm: ", alarm);
+
+                if (alarm !== null) {
+                    // populate the form fields with the alarm data
+                    document.getElementById("time").value = alarm['time'].toString().substring(0,5);
+                    document.getElementById("frequency").value = alarm['frequency'];
+
+                    // check if duration in option values is available
+                    const durationSelect = document.getElementById("duration");
+                    const durationOptions = Array.from(durationSelect.options).map(option => option.value);
+                    console.log("Current duration: ", alarm['duration']);
+                    console.log("Duration options: ", durationOptions);
+
+                    let durationFound = false;
+                    durationOptions.forEach(option => {
+                        if (option === alarm['duration'].toString()) {
+                            console.log("Duration option found: ", option);
+                            durationSelect.value = alarm['duration'].toString();
+                            durationFound = true;
+                        } else if (parseInt(option) === parseInt(alarm['duration'])) {
+                            console.log("Duration option found (parsed): ", option);
+                            durationSelect.value = parseInt(alarm['duration']).toString();
+                            durationFound = true;
+                        }
+                    });
+
+                    if (!durationFound) {
+                        console.log("Duration option not found, adding: ", alarm['duration']);
+                        const newOption = document.createElement("option");
+                        newOption.value = alarm['duration'];
+
+                        let durationText = "";
+                        if (alarm['duration'] / 3600 >= 1) {
+                            durationText += Math.floor(alarm['duration'] / 3600) + " hours ";
+                        }
+                        if ((alarm['duration'] % 3600) / 60 >= 1) {
+                            durationText += Math.floor((alarm['duration'] % 3600) / 60) + " minutes ";
+                        }
+                        if (alarm['duration'] % 60 > 0 || durationText === "") {
+                            durationText += (alarm['duration'] % 60) + " seconds";
+                        }
+
+                        newOption.textContent = durationText.trim();
+                        newOption.selected = true; // select the new option
+
+                        // insert the new option at the proper position
+                        const durationSelect = document.getElementById("duration");
+                        const options = Array.from(durationSelect.options);
+                        let inserted = false;
+                        for (let i = 0; i < options.length; i++) {
+                            if (parseInt(options[i].value) > parseInt(alarm['duration'])) {
+                                durationSelect.insertBefore(newOption, options[i]);
+                                inserted = true;
+                                break;
+                            }
+                        }
+                        if (!inserted) {
+                            // if no larger value found, append at the end
+                            console.log("Appending new duration option at the end: ", newOption);
+                            durationSelect.appendChild(newOption);
+                        }
+                    }
+                }
+            }
 
             // populate the room select element
             const roomSelect = document.getElementById("room");
@@ -180,6 +266,9 @@ function populateAddAlarmSection() {
                 const option = document.createElement("option");
                 option.value = room['name'];
                 option.textContent = room['name'];
+                if (alarm && alarm['room'] === room['name']) {
+                    option.selected = true; // select the room if editing an alarm
+                }
                 roomSelect.appendChild(option);
             });
 
@@ -191,10 +280,14 @@ function populateAddAlarmSection() {
                 const option = document.createElement("option");
                 option.value = station['uri'];
                 option.textContent = station['title'];
+                if (alarm && alarm['musicUri'] === station['uri']) {
+                    option.selected = true; // select the music if editing an alarm
+                }
                 musicSelect.appendChild(option);
             });
 
             // hide the loader
+            console.log("hiding loader for add alarm section");
             document.getElementById("loader")['style'].display = "none";
         })
         .catch(error => {
@@ -204,6 +297,7 @@ function populateAddAlarmSection() {
             errorMessage.style.display = "block";
 
             // hide the loader
+            console.log("hiding loader for add alarm section due to error");
             document.getElementById("loader")['style'].display = "none";
         });
 }
@@ -259,6 +353,7 @@ function toggleAlarm(alarmId) {
 
 function editAlarm(alarmId) {
     console.log("Edit alarm: ", alarmId);
+    showSection('add', alarmId);
     return true;
 }
 
@@ -300,7 +395,7 @@ function deleteAlarm(alarmId) {
     return true;
 }
 
-function addAlarm() {
+function addAlarm(alarmId = null) {
     const room = document.getElementById("room").valueOf().value;
     const time = document.getElementById("time").valueOf().value;
     const music = document.getElementById("music").valueOf().value;
@@ -314,6 +409,9 @@ function addAlarm() {
 
     let url = new URL("api.php", window.location.href);
     url.searchParams.append("cmd", "addAlarm");
+    if (alarmId) {
+        url.searchParams.append("alarmId", alarmId);
+    }
     url.searchParams.append("room", room);
     url.searchParams.append("time", time);
     url.searchParams.append("music", music);
